@@ -44,7 +44,7 @@ jobs:
           scripts/github_stats.py scripts/config.yaml > dashboard/github_stats.md
 
           # Generate visualization
-          scripts/plot_github_stats.py scripts/config.yaml dashboard/github_stats.json dashboard/github_stats.png
+          scripts/plot_github_stats.py dashboard/github_stats.json dashboard/github_stats.png
 
           echo "# NCEPLIBS Usage Dashboard" > dashboard/index.md
           echo "Generated on $(date -u)" >> dashboard/index.md
@@ -53,7 +53,7 @@ jobs:
           cat dashboard/nwprod_report.md >> dashboard/index.md
           cat dashboard/github_stats.md >> dashboard/index.md
           echo "" >> dashboard/index.md
-          echo "![GitHub Statistics](github_stats.png)" >> dashboard/index.md
+          echo "![GitHub statistics](github_stats.png)" >> dashboard/index.md
 
       - name: Upload dashboard artifact
         uses: actions/upload-pages-artifact@v3
