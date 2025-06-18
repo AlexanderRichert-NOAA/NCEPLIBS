@@ -32,10 +32,15 @@ jobs:
           pip install requests PyGithub pyyaml beautifulsoup4 matplotlib
 
       - name: Generate dashboard content
+        env:
+          GH_PAT: ${{ secrets.ALEX_GH_PAT }}
         run: |
           mkdir -p dashboard
+          echo "Checking various EMC module files..."
           scripts/check_emc_modulefiles.py scripts/config.yaml > dashboard/modulefile_report.md
+          echo "Checking nwprod codes..."
           scripts/check_nwprod_versions.py scripts/config.yaml > dashboard/nwprod_report.md
+          echo "Getting GitHub repo statistics..."
           scripts/github_stats.py scripts/config.yaml > dashboard/github_stats.md
 
           # Generate visualization

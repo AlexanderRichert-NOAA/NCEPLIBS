@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import sys
 import yaml
 import json
@@ -10,7 +11,8 @@ def main(config_path):
         cfg = yaml.safe_load(f)
 
     repos = cfg['repos']
-    gh = Github()  # Unauthenticated, or use GITHUB_TOKEN
+    token = os.getenv("GH_PAT")
+    gh = Github(token)
 
     stats = {}
     lines = ["## GitHub Repository Statistics\n"]
