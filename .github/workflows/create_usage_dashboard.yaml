@@ -34,12 +34,12 @@ jobs:
       - name: Generate dashboard content
         run: |
           mkdir -p dashboard
-          scripts/check_emc_modulefiles.py config.yaml > dashboard/modulefile_report.md
-          scripts/check_nwprod_versions.py config.yaml > dashboard/nwprod_report.md
-          scripts/github_stats.py config.yaml > dashboard/github_stats.md
+          scripts/check_emc_modulefiles.py scripts/config.yaml > dashboard/modulefile_report.md
+          scripts/check_nwprod_versions.py scripts/config.yaml > dashboard/nwprod_report.md
+          scripts/github_stats.py scripts/config.yaml > dashboard/github_stats.md
 
           # Generate visualization
-          scripts/plot_github_stats.py config.yaml dashboard/github_stats.json dashboard/github_stats.png
+          scripts/plot_github_stats.py scripts/config.yaml dashboard/github_stats.json dashboard/github_stats.png
 
           echo "# NCEPLIBS Usage Dashboard" > dashboard/index.md
           echo "Generated on $(date -u)" >> dashboard/index.md
