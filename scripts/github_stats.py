@@ -3,44 +3,50 @@ import os
 import sys
 import yaml
 import json
-from github import Github
-from datetime import datetime
+import subprocess
+import tempfile
+from datetime import datetime, timedelta
+
+def count_recent_commits(repo_url, days):
+    since = datetime.now() - timedelta(days=days)
+    since_str = since.strftime('%Y-%m-%d')
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        try:
+            subprocess.run([
+                "git", "clone", repo_url, tmpdir
+            ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+            result = subprocess.run([
+                "git", "-C", tmpdir, "log", f"--since={since_str}", "--pretty=oneline"
+            ], capture_output=True, text=True, check=True)
+
+            return len(result.stdout.strip().splitlines())
+        except Exception as e:
+            print(f"Failed to count commits for {repo_url}: {e}", file=sys.stderr)
+            return 0
 
 def main(config_path):
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
 
-    repos = cfg['repos']
-    token = os.getenv("GH_PAT")
-    gh = Github(token)
+    days_list = [30, 60, 90, 180]
+    repo_data = {}
+    for repo in cfg['repos']:
+        repo_url = f"https://github.com/{repo}.git"
 
-    stats = {}
-    lines = ["## GitHub Repository Statistics\n"]
+        repo_data[repo] = {}
+        for days in days_list:
+            repo_data[repo][f"commits_{days}"] = count_recent_commits(repo_url, days=days)
 
-    for repo_name in repos:
-        repo = gh.get_repo(repo_name)
-        clones = repo.get_clones_traffic()
-        commits = repo.get_commits(since=datetime.utcnow().replace(day=1, hour=0, minute=0, second=0))
+    print("## GitHub commit activity by repository\n")
+    print("| Repo | 30 Days | 60 Days | 90 Days | 180 Days |")
+    print("|---------|---------|---------|---------|-----------|")
+    for repo, data in repo_data.items():
+        print(f"| `{repo}` | {data['commits_30']} | {data['commits_60']} | {data['commits_90']} | {data['commits_180']} |")
 
-        shortname = repo_name.split('/')[-1]
-        stats[shortname] = {
-            "commits": commits.totalCount,
-            "clones_total": clones['count'],
-            "clones_unique": clones['uniques']
-        }
+    with open("github_stats.json", "w") as f:
+        json.dump(repo_data, f, indent=2)
 
-        lines.append(f"### `{repo_name}`")
-        lines.append(f"- Monthly commits: {commits.totalCount}")
-        lines.append(f"- Monthly clones: {clones['count']} total, {clones['uniques']} unique\n")
-
-    # Write markdown report
-    with open("output/github_stats.md", "w") as f:
-        f.write("\n".join(lines))
-
-    # Write JSON file
-    with open("output/github_stats.json", "w") as f:
-        json.dump(stats, f, indent=2)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(sys.argv[1])
-
