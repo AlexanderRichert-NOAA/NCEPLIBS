@@ -26,7 +26,7 @@ def count_recent_commits(repo_url, days):
             print(f"Failed to count commits for {repo_url}: {e}", file=sys.stderr)
             return 0
 
-def main(config_path):
+def generate_commit_data(config_path, json_output_path):
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
 
@@ -45,8 +45,8 @@ def main(config_path):
     for repo, data in repo_data.items():
         print(f"| `{repo}` | {data['commits_30']} | {data['commits_60']} | {data['commits_90']} | {data['commits_180']} |")
 
-    with open("github_stats.json", "w") as f:
+    with open(json_output_path, "w") as f:
         json.dump(repo_data, f, indent=2)
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    generate_commit_data(sys.argv[1], sys.argv[2])
