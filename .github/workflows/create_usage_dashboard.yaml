@@ -1,0 +1,68 @@
+name: Generate NCEPLIBS Usage Dashboard
+
+on:
+  workflow_dispatch:
+#  schedule:
+#    - cron: '0 3 1 * *'  # 3am UTC on the first of every month
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-dashboard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests PyGithub pyyaml beautifulsoup4 matplotlib
+
+      - name: Generate dashboard content
+        run: |
+          mkdir -p dashboard
+          scripts/check_emc_modulefiles.py config.yaml > dashboard/modulefile_report.md
+          scripts/check_nwprod_versions.py config.yaml > dashboard/nwprod_report.md
+          scripts/github_stats.py config.yaml > dashboard/github_stats.md
+
+          # Generate visualization
+          scripts/plot_github_stats.py config.yaml dashboard/github_stats.json dashboard/github_stats.png
+
+          echo "# NCEPLIBS Usage Dashboard" > dashboard/index.md
+          echo "Generated on $(date -u)" >> dashboard/index.md
+          echo "" >> dashboard/index.md
+          cat dashboard/modulefile_report.md >> dashboard/index.md
+          cat dashboard/nwprod_report.md >> dashboard/index.md
+          cat dashboard/github_stats.md >> dashboard/index.md
+          echo "" >> dashboard/index.md
+          echo "![GitHub Statistics](github_stats.png)" >> dashboard/index.md
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard
+
+  deploy-dashboard:
+    needs: build-dashboard
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

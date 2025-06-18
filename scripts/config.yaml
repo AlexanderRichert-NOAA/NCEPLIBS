@@ -1,0 +1,16 @@
+libraries:
+  - ip
+  - w3emc
+  - bacio
+  - bufr
+
+modulefiles:
+  UFS Weather Model: https://raw.githubusercontent.com/ufs-community/ufs-weather-model/develop/modulefiles/ufs_common.lua
+  Global Workflow: https://raw.githubusercontent.com/NOAA-EMC/global-workflow/develop/modulefiles/module_base.gaeac6.lua
+
+nwprod_base_url: https://www.nco.ncep.noaa.gov/pmb/codes/nwprod/
+
+repos:
+  - NOAA-EMC/NCEPLIBS-ip
+  - NOAA-EMC/NCEPLIBS-w3emc
+  - NOAA-EMC/NCEPLIBS-bacio
