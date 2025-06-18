@@ -41,7 +41,7 @@ jobs:
           echo "Checking nwprod codes..."
           scripts/check_nwprod_versions.py scripts/config.yaml > dashboard/nwprod_report.md
           echo "Getting GitHub repo statistics..."
-          scripts/github_stats.py scripts/config.yaml > dashboard/github_stats.md
+          scripts/github_stats.py scripts/config.yaml > dashboard/github_stats.md dashboard/github_stats.json
 
           # Generate visualization
           scripts/plot_github_stats.py dashboard/github_stats.json dashboard/github_stats.png
